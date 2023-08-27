@@ -6,7 +6,7 @@ async function query(sql, params) {
       host: process.env
         .MYSQL_ADDON_HOST,
       user: process.env
-        .PMYSQL_ADDON_USER,
+        .MYSQL_ADDON_USER,
       password:
         process.env
           .MYSQL_ADDON_PASSWORD,
