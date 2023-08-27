@@ -20,10 +20,10 @@ async function createStudent(req, res) {
 
   // Convert datetime values to MySQL datetime format using Luxon
   const formattedLibraryTime = new Date(
-    total_library_time
+    DateTime.now()
   );
   const formattedSACTime = new Date(
-    total_sac_time
+    DateTime.now()
   );
 
   try {
