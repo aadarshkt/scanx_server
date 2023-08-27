@@ -4,7 +4,7 @@ import studentsRouter from "./routes/studentsRoutes.js";
 import locationRouter from "./routes/locationRoutes.js";
 // import bodyParser from "body-parser";
 import cors from "cors";
-const port = 8080;
+const port = process.env.PORT || 8080;
 
 const app = express();
 app.use(cors());
