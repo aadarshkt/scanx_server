@@ -17,9 +17,9 @@ app.use(
 // app.use(bodyParser.json());
 
 const connection = createConnection({
-  host: "localhost",
-  user: "root",
-  database: "scanx_database",
+  host: process.env.MYSQL_ADDON_HOST,
+  user: process.env.PMYSQL_ADDON_USER,
+  database: process.env.MYSQL_ADDON_DB,
 });
 
 // Connect to the MySQL server

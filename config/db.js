@@ -3,9 +3,12 @@ import mysql from "mysql2/promise";
 async function query(sql, params) {
   const connection =
     await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      database: "scanx_database",
+      host: process.env
+        .MYSQL_ADDON_HOST,
+      user: process.env
+        .PMYSQL_ADDON_USER,
+      database:
+        process.env.MYSQL_ADDON_DB,
     });
   const [results] =
     await connection.execute(
