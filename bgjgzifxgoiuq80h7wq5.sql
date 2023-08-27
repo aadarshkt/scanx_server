@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Aug 27, 2023 at 12:48 PM
--- Server version: 10.4.28-MariaDB
--- PHP Version: 8.2.4
+-- Host: bgjgzifxgoiuq80h7wq5-mysql.services.clever-cloud.com:3306
+-- Generation Time: Aug 27, 2023 at 11:09 AM
+-- Server version: 8.0.22-13
+-- PHP Version: 8.2.7
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `scanx_database`
+-- Database: `bgjgzifxgoiuq80h7wq5`
 --
 
 -- --------------------------------------------------------
@@ -28,15 +28,15 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `Library` (
-  `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `roll_no` int(11) NOT NULL,
-  `mobile_number` int(11) NOT NULL,
-  `room_no` varchar(20) NOT NULL,
-  `hostel` varchar(255) DEFAULT NULL,
+  `id` int NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `roll_no` int NOT NULL,
+  `mobile_number` int NOT NULL,
+  `room_no` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `hostel` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `status` tinyint(1) NOT NULL,
-  `current_in` int(11) NOT NULL,
-  `description` varchar(500) DEFAULT NULL
+  `current_in` int NOT NULL,
+  `description` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -53,15 +53,15 @@ INSERT INTO `Library` (`id`, `name`, `roll_no`, `mobile_number`, `room_no`, `hos
 --
 
 CREATE TABLE `SAC` (
-  `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `roll_no` int(11) NOT NULL,
-  `mobile_number` int(11) NOT NULL,
-  `room_no` varchar(20) NOT NULL,
-  `hostel` varchar(20) NOT NULL,
+  `id` int NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `roll_no` int NOT NULL,
+  `mobile_number` int NOT NULL,
+  `room_no` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `hostel` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
   `status` tinyint(1) NOT NULL COMMENT 'datatype must be boolean',
-  `current_in` int(11) NOT NULL,
-  `description` varchar(500) DEFAULT NULL
+  `current_in` int NOT NULL,
+  `description` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -78,15 +78,15 @@ INSERT INTO `SAC` (`id`, `name`, `roll_no`, `mobile_number`, `room_no`, `hostel`
 --
 
 CREATE TABLE `students` (
-  `id` int(11) NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `roll_number` varchar(50) NOT NULL,
-  `email` varchar(50) DEFAULT NULL,
-  `last_location` varchar(50) DEFAULT NULL,
+  `id` int NOT NULL,
+  `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `roll_number` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `last_location` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `status` tinyint(1) DEFAULT NULL,
   `total_library_time` timestamp NULL DEFAULT NULL,
   `total_sac_time` timestamp NULL DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp()
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -134,19 +134,19 @@ ALTER TABLE `students`
 -- AUTO_INCREMENT for table `Library`
 --
 ALTER TABLE `Library`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `SAC`
 --
 ALTER TABLE `SAC`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `students`
 --
 ALTER TABLE `students`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
