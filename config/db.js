@@ -9,6 +9,9 @@ async function query(sql, params) {
         .PMYSQL_ADDON_USER,
       database:
         process.env.MYSQL_ADDON_DB,
+      password:
+        process.env
+          .MYSQL_ADDON_PASSWORD,
     });
   const [results] =
     await connection.execute(
