@@ -44,7 +44,7 @@ app.get("/", (req, res) => {
     "SELECT * FROM students",
     (error, results) => {
       if (error) {
-        console.error(
+        console.log(
           "Error executing MySQL query: " +
             error.stack
         );
