@@ -6,12 +6,20 @@ import {
 } from "../controllers/locationController.js";
 
 router.post(
-  "/createSACRecord",
-  createSACRecord
-);
-router.post(
-  "/createLibraryRecord",
-  createLibraryRecord
+  "/createRecord",
+  (req, res) => {
+    const location = req.query.location;
+    switch (location) {
+      case "Library":
+        createLibraryRecord;
+      case "SAC":
+        createSACRecord;
+        break;
+
+      default:
+        break;
+    }
+  }
 );
 
 export default router;
