@@ -13,6 +13,12 @@ async function query(sql, params) {
       database:
         process.env.MYSQL_ADDON_DB,
     });
+  // const connection =
+  //   await mysql.createConnection({
+  //     host: "localhost",
+  //     user: "root",
+  //     database: "scanx_database",
+  //   });
   const [results] =
     await connection.execute(
       sql,

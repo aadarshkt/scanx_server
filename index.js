@@ -2,7 +2,6 @@ import express from "express";
 import { createConnection } from "mysql2";
 import studentsRouter from "./routes/studentsRoutes.js";
 import locationRouter from "./routes/locationRoutes.js";
-// import bodyParser from "body-parser";
 import cors from "cors";
 const port = process.env.PORT || 8080;
 
@@ -23,6 +22,12 @@ const connection = createConnection({
     process.env.MYSQL_ADDON_PASSWORD,
   database: process.env.MYSQL_ADDON_DB,
 });
+
+// const connection = createConnection({
+//   host: "localhost",
+//   user: "root",
+//   database: "scanx_database",
+// });
 
 // Connect to the MySQL server
 connection.connect((err) => {

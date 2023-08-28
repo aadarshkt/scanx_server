@@ -11,13 +11,12 @@ router.post(
     const location = req.query.location;
     switch (location) {
       case "Library":
-        createLibraryRecord;
+        createLibraryRecord(req, res);
       case "SAC":
-        createSACRecord;
+        createSACRecord(req, res);
         break;
-
       default:
-        break;
+        res.send("Invalid Location");
     }
   }
 );
