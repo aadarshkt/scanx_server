@@ -3,6 +3,8 @@ const router = Router();
 import {
   createSACRecord,
   createLibraryRecord,
+  fetchAllSACrecords,
+  fetchAllLibraryrecords,
 } from "../controllers/locationController.js";
 
 router.post(
@@ -10,7 +12,7 @@ router.post(
   (req, res) => {
     const location = req.query.location;
     switch (location) {
-      case "Library":
+      case "LIBRARY":
         createLibraryRecord(req, res);
       case "SAC":
         createSACRecord(req, res);
@@ -20,5 +22,19 @@ router.post(
     }
   }
 );
+
+router.get("/", (req, res) => {
+  const location = req.query.location;
+  switch (location) {
+    case "LIBRARY":
+      fetchAllLibraryrecords(req, res);
+      break;
+    case "SAC":
+      fetchAllSACrecords(req, res);
+      break;
+    default:
+      res.send("Invalid Location");
+  }
+});
 
 export default router;

@@ -1,5 +1,23 @@
 import query from "../config/db.js";
 
+//fetch all sac records
+const fetchAllSACrecords = async (
+  req,
+  res
+) => {
+  try {
+    const results = await query(
+      "SELECT * FROM SAC"
+    );
+    res.json(results);
+  } catch (err) {
+    console.error(
+      "There was an error in fetching records" +
+        err
+    );
+  }
+};
+
 //create new record when user is entering
 const createSACRecord = async (
   req,
@@ -124,6 +142,24 @@ const updateSACStatus = async (
       .send(
         "Error updating SAC exit status."
       );
+  }
+};
+
+//fetch all Library records
+const fetchAllLibraryrecords = async (
+  req,
+  res
+) => {
+  try {
+    const results = await query(
+      "SELECT * FROM Library"
+    );
+    res.json(results);
+  } catch (err) {
+    console.error(
+      "There was an error in fetching records" +
+        err
+    );
   }
 };
 
@@ -291,4 +327,6 @@ export {
   getCurrentInValue,
   updateSACStatus,
   updateLibraryStatus,
+  fetchAllSACrecords,
+  fetchAllLibraryrecords,
 };
