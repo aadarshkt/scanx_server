@@ -4,6 +4,12 @@ import studentsRouter from "./routes/studentsRoutes.js";
 import locationRouter from "./routes/locationRoutes.js";
 import cors from "cors";
 const port = process.env.PORT || 8080;
+import {
+  generateToken,
+  verifyToken,
+} from "./middleware/token.js";
+import query from "./config/db.js";
+import bcrypt from "bcrypt";
 
 const app = express();
 app.use(cors());
@@ -44,10 +50,103 @@ connection.connect((err) => {
   );
 });
 
+//register
+app.post(
+  "/register",
+  async (req, res) => {
+    try {
+      const { email, password } =
+        req.body;
+      const hashedPassword =
+        await bcrypt.hash(password, 10);
+      const registerQuery =
+        "INSERT INTO students (email, hashedpassword) VALUES (?, ?)";
+      await query(registerQuery, [
+        email,
+        hashedPassword,
+      ]);
+      const searchEmail =
+        "SELECT * FROM students WHERE email = ?";
+      const rows = await query(email, [
+        email,
+      ]);
+      const token = generateToken(rows);
+      console.log(
+        "Student registered successfully"
+      );
+      return res
+        .status(200)
+        .json({
+          token,
+        })
+        .send(
+          "student registered successfully"
+        );
+    } catch (e) {
+      console.error(
+        "Error registering student" +
+          error.stack
+      );
+      return res
+        .status(500)
+        .send(
+          "Error registering student"
+        );
+    }
+  }
+);
+
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } =
+      req.body;
+    const searchEmail =
+      "SELECT * FROM students WHERE email = ?";
+    const rows = await query(
+      searchEmail,
+      [email]
+    );
+    if (rows.length == 0) {
+      console.log(
+        "Error finding the email"
+      );
+      return res.status(401).json({
+        error: "Email is wrong",
+      });
+    }
+    const isPasswordValid =
+      await bcrypt.compare(
+        password,
+        rows.hashedpassword
+      );
+    if (!isPasswordValid) {
+      console.error(
+        "The password is not valid"
+      );
+      return res.status(401).json({
+        error: "Password is wrong",
+      });
+    }
+    const token = generateToken(rows);
+    return res
+      .status(200)
+      .json({ token });
+  } catch (error) {
+    console.error("Error logging in");
+    return res.status(500).json({
+      error: "Authentication failed",
+    });
+  }
+});
+
+app.post("/verify", (req, res, next) =>
+  verifyToken(req, res, next)
+);
+
 // Define a route handler for the root path
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
   // Execute a query
-  connection.query(
+  await query(
     "SELECT * FROM students",
     (error, results) => {
       if (error) {
@@ -67,7 +166,6 @@ app.get("/", (req, res) => {
   );
 });
 
-// Use the students router
 app.use("/students", studentsRouter);
 app.use("/location", locationRouter);
 
