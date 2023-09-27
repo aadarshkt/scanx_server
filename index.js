@@ -1,9 +1,9 @@
 import express from "express";
+import dotenv from "dotenv";
 import { createConnection } from "mysql2";
 import studentsRouter from "./routes/studentsRoutes.js";
 import locationRouter from "./routes/locationRoutes.js";
 import cors from "cors";
-const port = process.env.PORT || 8080;
 import {
   generateToken,
   verifyToken,
@@ -12,6 +12,7 @@ import query from "./config/db.js";
 import bcrypt from "bcrypt";
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 app.use(
@@ -19,21 +20,23 @@ app.use(
     extended: true,
   })
 );
-// app.use(bodyParser.json());
 
-const connection = createConnection({
-  host: process.env.MYSQL_ADDON_HOST,
-  user: process.env.MYSQL_ADDON_USER,
-  password:
-    process.env.MYSQL_ADDON_PASSWORD,
-  database: process.env.MYSQL_ADDON_DB,
-});
+dotenv.config();
+const port = process.env.PORT;
 
 // const connection = createConnection({
-//   host: "localhost",
-//   user: "root",
-//   database: "scanx_database",
+//   host: process.env.MYSQL_ADDON_HOST,
+//   user: process.env.MYSQL_ADDON_USER,
+//   password:
+//     process.env.MYSQL_ADDON_PASSWORD,
+//   database: process.env.MYSQL_ADDON_DB,
 // });
+
+const connection = createConnection({
+  host: "localhost",
+  user: "root",
+  database: "scanx_database",
+});
 
 // Connect to the MySQL server
 connection.connect((err) => {
@@ -57,6 +60,27 @@ app.post(
     try {
       const { email, password } =
         req.body;
+
+      //check for already existing email
+      const checkEmailQuery =
+        "SELECT COUNT(*) AS email_count FROM students WHERE email = ?";
+
+      const isPresent = await query(
+        checkEmailQuery,
+        [email]
+      );
+      if (
+        isPresent[0].email_count > 0
+      ) {
+        //status code 409 for conflict
+        return res.status(409).json({
+          message:
+            "Email already is use",
+        });
+      }
+      console.log(
+        isPresent[0].email_count
+      );
       const hashedPassword =
         await bcrypt.hash(password, 10);
       const registerQuery =
@@ -65,24 +89,27 @@ app.post(
         email,
         hashedPassword,
       ]);
-      const searchEmail =
+      const searchEmailQuery =
         "SELECT * FROM students WHERE email = ?";
-      const rows = await query(email, [
-        email,
-      ]);
-      const token = generateToken(rows);
+      const rows = await query(
+        searchEmailQuery,
+        [email]
+      );
+      console.log(
+        "registerd email query",
+        rows[0].id
+      );
+      const token = generateToken(
+        rows[0].id
+      );
       console.log(
         "Student registered successfully"
       );
-      return res
-        .status(200)
-        .json({
-          token,
-        })
-        .send(
-          "student registered successfully"
-        );
-    } catch (e) {
+      return res.status(200).json({
+        message:
+          "Registration Successful",
+      });
+    } catch (error) {
       console.error(
         "Error registering student" +
           error.stack
@@ -100,6 +127,7 @@ app.post("/login", async (req, res) => {
   try {
     const { email, password } =
       req.body;
+    console.log(email, password);
     const searchEmail =
       "SELECT * FROM students WHERE email = ?";
     const rows = await query(
@@ -111,20 +139,23 @@ app.post("/login", async (req, res) => {
         "Error finding the email"
       );
       return res.status(401).json({
-        error: "Email is wrong",
+        error:
+          "Unauthorised access, Invaild email",
       });
     }
+    console.log(rows);
     const isPasswordValid =
       await bcrypt.compare(
         password,
-        rows.hashedpassword
+        rows[0].hashedpassword
       );
     if (!isPasswordValid) {
       console.error(
         "The password is not valid"
       );
       return res.status(401).json({
-        error: "Password is wrong",
+        error:
+          "Unauthorised Access, Password is wrong",
       });
     }
     const token = generateToken(rows);

@@ -5,17 +5,10 @@ const fetchAllSACrecords = async (
   req,
   res
 ) => {
-  try {
-    const results = await query(
-      "SELECT * FROM SAC"
-    );
-    res.json(results);
-  } catch (err) {
-    console.error(
-      "There was an error in fetching records" +
-        err
-    );
-  }
+  const results = await query(
+    "SELECT * FROM SAC"
+  );
+  res.json(results);
 };
 
 //create new record when user is entering
