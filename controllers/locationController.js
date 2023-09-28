@@ -19,12 +19,13 @@ const createSACRecord = async (
   const {
     name,
     roll_no,
+    email,
     mobile_number,
     room_no,
     hostel,
-    description,
   } = req.body;
-
+  //Todo handle description
+  const description = "";
   try {
     // Query the previous row to get the current_in value
     const [prevRow] = await query(
@@ -42,10 +43,11 @@ const createSACRecord = async (
 
     // Execute the insert query
     await query(
-      "INSERT INTO SAC (name, roll_no, mobile_number, room_no, hostel, status, current_in, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO SAC (name, roll_no, email, mobile_number, room_no, hostel, status, current_in, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         name,
         roll_no,
+        email,
         mobile_number,
         room_no,
         hostel,
@@ -163,55 +165,42 @@ const createLibraryRecord = async (
   const {
     name,
     roll_no,
+    email,
     mobile_number,
     room_no,
     hostel,
-    status,
-    description,
   } = req.body;
 
+  //Todo handle description and status
+  const description = "hello",
+    status = 1;
   try {
-    const [prevRow] = await query(
-      "SELECT current_in FROM Library LIMIT 1"
-    );
-
-    // Get the current_in value from the previous row
-    const previousCurrentIn =
-      prevRow && prevRow[0]
-        ? prevRow[0].current_in
-        : null;
-
-    const current_in =
-      previousCurrentIn + 1;
-
     // Execute the insert query
     await query(
-      "INSERT INTO Library (name, roll_no, mobile_number, room_no, hostel, status, current_in, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO Library (name, roll_no, email, mobile_number, room_no, hostel) VALUES (?, ?, ?, ?, ?, ?)",
       [
         name,
         roll_no,
+        email,
         mobile_number,
         room_no,
         hostel,
-        status,
-        current_in,
-        description,
       ]
     );
     return res
       .status(200)
       .send(
-        "Record created successfully!"
+        "Library Record created successfully!"
       );
   } catch (error) {
     console.error(
-      "Error creating SAC record: " +
+      "Error creating Library record: " +
         error.stack
     );
     res
       .status(500)
       .send(
-        "Error creating SAC record."
+        "Error creating Library record."
       );
   }
 };

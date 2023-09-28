@@ -12,13 +12,16 @@ router.post(
   (req, res) => {
     const location = req.query.location;
     switch (location) {
-      case "LIBRARY":
+      case "Library":
         createLibraryRecord(req, res);
+        break;
       case "SAC":
         createSACRecord(req, res);
         break;
       default:
-        res.send("Invalid Location");
+        res.status(406).json({
+          message: "Not acceptable",
+        });
     }
   }
 );

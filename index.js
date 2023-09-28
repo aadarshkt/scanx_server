@@ -53,76 +53,6 @@ connection.connect((err) => {
   );
 });
 
-//register
-app.post(
-  "/register",
-  async (req, res) => {
-    try {
-      const { email, password } =
-        req.body;
-
-      //check for already existing email
-      const checkEmailQuery =
-        "SELECT COUNT(*) AS email_count FROM students WHERE email = ?";
-
-      const isPresent = await query(
-        checkEmailQuery,
-        [email]
-      );
-      if (
-        isPresent[0].email_count > 0
-      ) {
-        //status code 409 for conflict
-        return res.status(409).json({
-          message:
-            "Email already is use",
-        });
-      }
-      console.log(
-        isPresent[0].email_count
-      );
-      const hashedPassword =
-        await bcrypt.hash(password, 10);
-      const registerQuery =
-        "INSERT INTO students (email, hashedpassword) VALUES (?, ?)";
-      await query(registerQuery, [
-        email,
-        hashedPassword,
-      ]);
-      const searchEmailQuery =
-        "SELECT * FROM students WHERE email = ?";
-      const rows = await query(
-        searchEmailQuery,
-        [email]
-      );
-      console.log(
-        "registerd email query",
-        rows[0].id
-      );
-      const token = generateToken(
-        rows[0].id
-      );
-      console.log(
-        "Student registered successfully"
-      );
-      return res.status(200).json({
-        message:
-          "Registration Successful",
-      });
-    } catch (error) {
-      console.error(
-        "Error registering student" +
-          error.stack
-      );
-      return res
-        .status(500)
-        .send(
-          "Error registering student"
-        );
-    }
-  }
-);
-
 app.post("/login", async (req, res) => {
   try {
     const { email, password } =
@@ -143,7 +73,6 @@ app.post("/login", async (req, res) => {
           "Unauthorised access, Invaild email",
       });
     }
-    console.log(rows);
     const isPasswordValid =
       await bcrypt.compare(
         password,
@@ -159,11 +88,17 @@ app.post("/login", async (req, res) => {
       });
     }
     const token = generateToken(rows);
-    return res
-      .status(200)
-      .json({ token });
+
+    //Todo hashedPassword is also being sent. Although no one
+    //can actually decrypt it as secret key is on the server.
+    return res.status(200).json({
+      token,
+      userData: rows[0],
+    });
   } catch (error) {
-    console.error("Error logging in");
+    console.error(
+      "Error logging in" + error
+    );
     return res.status(500).json({
       error: "Authentication failed",
     });

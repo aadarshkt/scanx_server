@@ -6,6 +6,7 @@ import {
   updateLibraryStatus,
 } from "./locationController.js";
 import { DateTime } from "luxon";
+import bcrypt from "bcrypt";
 
 //create a new student
 async function createStudent(req, res) {
@@ -13,10 +14,27 @@ async function createStudent(req, res) {
     name,
     roll_number,
     email,
+    mobile_number,
     last_location,
-    total_library_time,
-    total_sac_time,
+    password,
   } = req.body;
+
+  //check for already existing email
+  const checkEmailQuery =
+    "SELECT COUNT(*) AS email_count FROM students WHERE email = ?";
+
+  const isPresent = await query(
+    checkEmailQuery,
+    [email]
+  );
+  if (isPresent[0].email_count > 0) {
+    //status code 409 for conflict
+    return res.status(409).json({
+      message: "Email already is use",
+    });
+  }
+  const hashedPassword =
+    await bcrypt.hash(password, 10);
 
   // Convert datetime values to MySQL datetime format using Luxon
   const formattedLibraryTime = new Date(
@@ -29,15 +47,17 @@ async function createStudent(req, res) {
   try {
     // Execute the insert query to create a new student
     await query(
-      "INSERT INTO students (name, roll_number, email, last_location, status, total_library_time, total_sac_time) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO students (name, roll_number, email, mobile_number, last_location, status, total_library_time, total_sac_time, hashedpassword) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         name,
         roll_number,
         email,
+        mobile_number,
         last_location,
         -1,
         formattedLibraryTime,
         formattedSACTime,
+        hashedPassword,
       ]
     );
 
@@ -58,6 +78,47 @@ async function createStudent(req, res) {
       );
   }
 }
+
+const updateProfile = async (
+  req,
+  res
+) => {
+  try {
+    const {
+      name,
+      roll_number,
+      email,
+      last_location,
+      total_library_time,
+      total_sac_time,
+    } = req.body;
+    const searchProfileQuery =
+      "SELECT * FROM students WHERE email = ?";
+    const [row] = await query(
+      searchProfileQuery,
+      [email]
+    );
+    if (row.length == 0) {
+      console.error(
+        "No matching student found for update"
+      );
+    } else {
+      const updateProfileQuery =
+        "UPDATE students SET (name, roll_number, last_location, total_library_time, total_sac_time) VALUES (?, ?, ?, ?, ?)";
+      await query(updateProfileQuery, [
+        name,
+        roll_number,
+        last_location,
+        total_library_time,
+        total_sac_time,
+      ]);
+    }
+  } catch (error) {
+    console.error(
+      "Error updating Profile"
+    );
+  }
+};
 
 // Controller function to update last_location and status in students table
 //Entry or exit of student
@@ -212,4 +273,8 @@ const updateStudent = async (
   }
 };
 
-export { createStudent, updateStudent };
+export {
+  createStudent,
+  updateStudent,
+  updateProfile,
+};

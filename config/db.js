@@ -31,6 +31,7 @@ async function query(sql, params) {
   } catch (error) {
     console.error(
       "Error executing mySql query" +
+        sql +
         error
     );
   }
