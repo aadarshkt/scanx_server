@@ -29,6 +29,7 @@ const createSACRecord = async (
   //Todo handle description
   const description = "";
   try {
+    //TODO : implement current feature.
     // // Query the previous row to get the current_in value
     // const [prevRow] = await query(
     //   "SELECT current_in FROM SAC LIMIT 1"
@@ -232,26 +233,54 @@ const createLibraryRecord = async (
   } = req.body;
 
   //Todo handle description and status
-  const description = "hello",
-    status = 1;
   try {
-    // Execute the insert query
-    await query(
-      "INSERT INTO Library (name, roll_no, email, mobile_number, room_no, hostel) VALUES (?, ?, ?, ?, ?, ?)",
-      [
-        name,
-        roll_no,
-        email,
-        mobile_number,
-        room_no,
-        hostel,
-      ]
+    const checkStatusQuery =
+      "SELECT status FROM Library WHERE email = ? AND status = ?";
+    const resStatus = await query(
+      checkStatusQuery,
+      [email, 1]
     );
-    return res
-      .status(200)
-      .send(
-        "Library Record created successfully!"
+    const prevStatus =
+      resStatus.length > 0
+        ? resStatus[0].status
+        : -1;
+
+    if (prevStatus == -1) {
+      const currentTime = new Date(
+        DateTime.now()
       );
+      // Execute the insert query
+      await query(
+        "INSERT INTO Library (name, roll_no, email, mobile_number, room_no, hostel, entry_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+          name,
+          roll_no,
+          email,
+          mobile_number,
+          room_no,
+          hostel,
+          currentTime,
+          1,
+        ]
+      );
+      const updateLastLocation =
+        "UPDATE students SET last_location = ?, status = ? WHERE email = ?";
+      await query(updateLastLocation, [
+        "Library",
+        1,
+        email,
+      ]);
+      return res
+        .status(200)
+        .send(
+          "Library Record created successfully!"
+        );
+    } else {
+      await updateLibraryStatus(
+        req,
+        res
+      );
+    }
   } catch (error) {
     console.error(
       "Error creating Library record: " +
@@ -272,8 +301,7 @@ const updateLibraryStatus = async (
   res
 ) => {
   try {
-    const { name, roll_number } =
-      req.body;
+    const { email } = req.body;
 
     //get previous current_in
     const [prevRow] = await query(
@@ -291,18 +319,52 @@ const updateLibraryStatus = async (
     const current_in =
       previousCurrentIn - 1;
 
-    const query =
-      "UPDATE Library SET status = ?, current_in = ? WHERE name = ? AND roll_no = ?";
+    const currentTime = new Date(
+      DateTime.now()
+    );
+
+    //fetch entry_at value of a particular student such that status is 1.
+    const entryQuery =
+      "SELECT * FROM Library WHERE email = ? AND status = ?";
+    const entryResult = await query(
+      entryQuery,
+      [email, 1]
+    );
+    const entryTime =
+      entryResult.length > 0
+        ? entryResult[0].entry_at
+        : currentTime;
+    //Calculate total time spent in a location
+    const timeSpent =
+      calculateTimeDifference(
+        entryTime,
+        currentTime
+      );
+    console.log(
+      "time spent" + timeSpent
+    );
+
+    //update student table with time spent at location
+    const updateTimeSpentQuery =
+      "UPDATE students SET total_library_time = ? WHERE email = ?";
+    await query(updateTimeSpentQuery, [
+      timeSpent,
+      email,
+    ]);
+
+    //exit library with changing status and current_in
+    const exitLibraryQuery =
+      "UPDATE Library SET status = ?, current_in = ?, exit_at = ? WHERE email = ?";
 
     const values = [
-      1,
+      0,
       current_in,
-      name,
-      roll_number,
+      currentTime,
+      email,
     ];
 
     const [result] = await query(
-      query,
+      exitLibraryQuery,
       values
     );
 
