@@ -354,7 +354,7 @@ const updateLibraryStatus = async (
 
     //update student table with time spent at location
     const updateTimeSpentQuery =
-      "UPDATE students SET total_library_time = ? status = ? WHERE email = ?";
+      "UPDATE students SET total_library_time = ?, status = ? WHERE email = ?";
     await query(
       updateTimeSpentQuery,
       [timeSpent, 0, email],

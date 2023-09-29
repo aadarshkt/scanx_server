@@ -18,7 +18,7 @@ const getLastLocation = async (
   const userId = verifyToken(req, res);
 
   const searchLastLocationQuery =
-    "SELECT last_location, total_sac_time FROM students WHERE id = ?";
+    "SELECT last_location, total_sac_time, total_library_time FROM students WHERE id = ?";
   const last_location_response =
     await query(
       searchLastLocationQuery,
@@ -35,6 +35,9 @@ const getLastLocation = async (
       total_sac_time_spent:
         last_location_response[0]
           .total_sac_time,
+      total_library_time_spent:
+        last_location_response[0]
+          .total_library_time,
     });
   }
 
