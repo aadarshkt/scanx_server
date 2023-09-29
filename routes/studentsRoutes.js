@@ -4,7 +4,14 @@ import {
   createStudent,
   updateProfile,
   updateStudent,
+  getLastLocation,
 } from "../controllers/studentController.js";
+
+//getLast location
+router.get(
+  "/last_location",
+  getLastLocation
+);
 
 // Define the route for creating a new student
 router.post("/", createStudent);

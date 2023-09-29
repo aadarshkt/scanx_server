@@ -7,6 +7,40 @@ import {
 } from "./locationController.js";
 import { DateTime } from "luxon";
 import bcrypt from "bcrypt";
+import { verifyToken } from "../middleware/token.js";
+
+//get last location and time on any location
+const getLastLocation = async (
+  req,
+  res
+) => {
+  //verification with jwt token of user.
+  const userId = verifyToken(req, res);
+
+  const searchLastLocationQuery =
+    "SELECT last_location, total_sac_time FROM students WHERE id = ?";
+  const last_location_response =
+    await query(
+      searchLastLocationQuery,
+      [userId]
+    );
+  if (
+    last_location_response.length > 0
+  ) {
+    return res.status(200).json({
+      last_location:
+        last_location_response[0]
+          .last_location,
+      total_sac_time_spent:
+        last_location_response[0]
+          .total_sac_time,
+    });
+  }
+
+  return res
+    .status(401)
+    .json({ message: "Unauthorised" });
+};
 
 //create a new student
 async function createStudent(req, res) {
@@ -275,6 +309,7 @@ const updateStudent = async (
 
 export {
   createStudent,
+  getLastLocation,
   updateStudent,
   updateProfile,
 };

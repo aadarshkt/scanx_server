@@ -14,7 +14,6 @@ router.post(
     switch (location) {
       case "Library":
         createLibraryRecord(req, res);
-        break;
       case "SAC":
         createSACRecord(req, res);
         break;

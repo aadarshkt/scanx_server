@@ -84,11 +84,12 @@ app.post("/login", async (req, res) => {
       );
       return res.status(401).json({
         error:
-          "Unauthorised Access, Password is wrong",
+          "Invalid authentication credentials",
       });
     }
-    const token = generateToken(rows);
-
+    const token = generateToken(
+      rows[0]
+    );
     //Todo hashedPassword is also being sent. Although no one
     //can actually decrypt it as secret key is on the server.
     return res.status(200).json({
@@ -104,10 +105,6 @@ app.post("/login", async (req, res) => {
     });
   }
 });
-
-app.post("/verify", (req, res, next) =>
-  verifyToken(req, res, next)
-);
 
 // Define a route handler for the root path
 app.get("/", async (req, res) => {

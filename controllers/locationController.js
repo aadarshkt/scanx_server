@@ -1,4 +1,6 @@
 import query from "../config/db.js";
+import { DateTime } from "luxon";
+import { calculateTimeDifference } from "../utils/helperFunctions.js";
 
 //fetch all sac records
 const fetchAllSACrecords = async (
@@ -27,40 +29,69 @@ const createSACRecord = async (
   //Todo handle description
   const description = "";
   try {
-    // Query the previous row to get the current_in value
-    const [prevRow] = await query(
-      "SELECT current_in FROM SAC LIMIT 1"
+    // // Query the previous row to get the current_in value
+    // const [prevRow] = await query(
+    //   "SELECT current_in FROM SAC LIMIT 1"
+    // );
+
+    // // Get the current_in value from the previous row
+    // const previousCurrentIn =
+    //   prevRow && prevRow[0]
+    //     ? prevRow[0].current_in
+    //     : null;
+
+    // const current_in =
+    //   previousCurrentIn + 1;
+
+    //we know location for this function has been called.
+    //we know email of student
+    //check status of that student at that location
+    //if status 1 means in, exit that student call updateSACStatus
+    //if status 0 or not available enter that student call insert query.
+    const checkStatusQuery =
+      "SELECT status FROM SAC WHERE email = ? AND status = ?";
+    const resStatus = await query(
+      checkStatusQuery,
+      [email, 1]
     );
+    const prevStatus =
+      resStatus.length > 0
+        ? resStatus[0].status
+        : -1;
 
-    // Get the current_in value from the previous row
-    const previousCurrentIn =
-      prevRow && prevRow[0]
-        ? prevRow[0].current_in
-        : null;
-
-    const current_in =
-      previousCurrentIn + 1;
-
-    // Execute the insert query
-    await query(
-      "INSERT INTO SAC (name, roll_no, email, mobile_number, room_no, hostel, status, current_in, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [
-        name,
-        roll_no,
-        email,
-        mobile_number,
-        room_no,
-        hostel,
-        0,
-        current_in,
-        description,
-      ]
-    );
-    return res
-      .status(200)
-      .send(
-        "Record created successfully!"
+    if (prevStatus == -1) {
+      const currentTime = new Date(
+        DateTime.now()
       );
+      // Execute the insert query
+      await query(
+        "INSERT INTO SAC (name, roll_no, email, mobile_number, room_no, hostel, entry_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+          name,
+          roll_no,
+          email,
+          mobile_number,
+          room_no,
+          hostel,
+          currentTime,
+          1,
+        ]
+      );
+      const updateLastLocation =
+        "UPDATE students SET last_location = ?, status = ? WHERE email = ?";
+      await query(updateLastLocation, [
+        "SAC",
+        1,
+        email,
+      ]);
+      return res
+        .status(200)
+        .send(
+          "SAC Record created successfully!"
+        );
+    } else {
+      await updateSACStatus(req, res);
+    }
   } catch (error) {
     console.error(
       "Error creating SAC record: " +
@@ -80,17 +111,16 @@ const updateSACStatus = async (
   res
 ) => {
   try {
-    const { name, roll_number } =
-      req.body;
+    const { email } = req.body;
 
     //get previous current_in
-    const [prevRow] = await query(
+    const prevRow = await query(
       "SELECT current_in FROM SAC LIMIT 1"
     );
 
     // Get the current_in value from the previous row
     const previousCurrentIn =
-      prevRow && prevRow[0]
+      prevRow.length > 0
         ? prevRow[0].current_in
         : null;
 
@@ -99,28 +129,58 @@ const updateSACStatus = async (
     const current_in =
       previousCurrentIn - 1;
 
-    const query =
-      "UPDATE SAC SET status = ?, current_in = ? WHERE name = ? AND roll_no = ?";
-
-    const values = [
-      1,
-      current_in,
-      name,
-      roll_number,
-    ];
-
-    const [result] = await query(
-      query,
-      values
+    const currentTime = new Date(
+      DateTime.now()
     );
 
-    if (result.affectedRows === 0) {
-      return res
-        .status(404)
-        .send(
-          "No matching record found in SAC table."
-        );
-    }
+    //fetch entry_at value of a particular student such that status is 1.
+    const entryQuery =
+      "SELECT * FROM SAC WHERE email = ? AND status = ?";
+    const entryResult = await query(
+      entryQuery,
+      [email, 1]
+    );
+    const entryTime =
+      entryResult.length > 0
+        ? entryResult[0].entry_at
+        : currentTime;
+    //Calculate total time spent in a location
+    const timeSpent =
+      calculateTimeDifference(
+        entryTime,
+        currentTime
+      );
+    console.log(
+      "time spent" + timeSpent
+    );
+    //update student table with time spent at location
+    const updateTimeSpentQuery =
+      "UPDATE students SET total_sac_time = ? WHERE email = ?";
+    await query(updateTimeSpentQuery, [
+      timeSpent,
+      email,
+    ]);
+
+    //exit and update exit_at, current_in and status of out.
+    const exitSACQuery =
+      "UPDATE SAC SET status = ?, current_in = ?, exit_at = ? WHERE email = ?";
+
+    const values = [
+      0,
+      current_in,
+      currentTime,
+      email,
+    ];
+
+    await query(exitSACQuery, values);
+    //update last location
+    const updateLastLocation =
+      "UPDATE students SET last_location = ?, status = ? WHERE email = ?";
+    await query(updateLastLocation, [
+      "SAC",
+      0,
+      email,
+    ]);
 
     res
       .status(200)
