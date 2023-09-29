@@ -53,7 +53,8 @@ const createSACRecord = async (
       "SELECT status FROM SAC WHERE email = ? AND status = ?";
     const resStatus = await query(
       checkStatusQuery,
-      [email, 1]
+      [email, 1],
+      res
     );
     const prevStatus =
       resStatus.length > 0
@@ -76,15 +77,16 @@ const createSACRecord = async (
           hostel,
           currentTime,
           1,
-        ]
+        ],
+        res
       );
       const updateLastLocation =
         "UPDATE students SET last_location = ?, status = ? WHERE email = ?";
-      await query(updateLastLocation, [
-        "SAC",
-        1,
-        email,
-      ]);
+      await query(
+        updateLastLocation,
+        ["SAC", 1, email],
+        res
+      );
       return res
         .status(200)
         .send(
@@ -139,7 +141,8 @@ const updateSACStatus = async (
       "SELECT * FROM SAC WHERE email = ? AND status = ?";
     const entryResult = await query(
       entryQuery,
-      [email, 1]
+      [email, 1],
+      res
     );
     const entryTime =
       entryResult.length > 0
@@ -157,10 +160,11 @@ const updateSACStatus = async (
     //update student table with time spent at location
     const updateTimeSpentQuery =
       "UPDATE students SET total_sac_time = ? WHERE email = ?";
-    await query(updateTimeSpentQuery, [
-      timeSpent,
-      email,
-    ]);
+    await query(
+      updateTimeSpentQuery,
+      [timeSpent, email],
+      res
+    );
 
     //exit and update exit_at, current_in and status of out.
     const exitSACQuery =
@@ -173,15 +177,19 @@ const updateSACStatus = async (
       email,
     ];
 
-    await query(exitSACQuery, values);
+    await query(
+      exitSACQuery,
+      values,
+      res
+    );
     //update last location
     const updateLastLocation =
       "UPDATE students SET last_location = ?, status = ? WHERE email = ?";
-    await query(updateLastLocation, [
-      "SAC",
-      0,
-      email,
-    ]);
+    await query(
+      updateLastLocation,
+      ["SAC", 0, email],
+      res
+    );
 
     res
       .status(200)
@@ -238,7 +246,8 @@ const createLibraryRecord = async (
       "SELECT status FROM Library WHERE email = ? AND status = ?";
     const resStatus = await query(
       checkStatusQuery,
-      [email, 1]
+      [email, 1],
+      res
     );
     const prevStatus =
       resStatus.length > 0
@@ -261,15 +270,16 @@ const createLibraryRecord = async (
           hostel,
           currentTime,
           1,
-        ]
+        ],
+        res
       );
       const updateLastLocation =
         "UPDATE students SET last_location = ?, status = ? WHERE email = ?";
-      await query(updateLastLocation, [
-        "Library",
-        1,
-        email,
-      ]);
+      await query(
+        updateLastLocation,
+        ["Library", 1, email],
+        res
+      );
       return res
         .status(200)
         .send(
@@ -328,7 +338,8 @@ const updateLibraryStatus = async (
       "SELECT * FROM Library WHERE email = ? AND status = ?";
     const entryResult = await query(
       entryQuery,
-      [email, 1]
+      [email, 1],
+      res
     );
     const entryTime =
       entryResult.length > 0
@@ -340,17 +351,15 @@ const updateLibraryStatus = async (
         entryTime,
         currentTime
       );
-    console.log(
-      "time spent" + timeSpent
-    );
 
     //update student table with time spent at location
     const updateTimeSpentQuery =
-      "UPDATE students SET total_library_time = ? WHERE email = ?";
-    await query(updateTimeSpentQuery, [
-      timeSpent,
-      email,
-    ]);
+      "UPDATE students SET total_library_time = ? status = ? WHERE email = ?";
+    await query(
+      updateTimeSpentQuery,
+      [timeSpent, 0, email],
+      res
+    );
 
     //exit library with changing status and current_in
     const exitLibraryQuery =
@@ -363,18 +372,11 @@ const updateLibraryStatus = async (
       email,
     ];
 
-    const [result] = await query(
+    await query(
       exitLibraryQuery,
-      values
+      values,
+      res
     );
-
-    if (result.affectedRows === 0) {
-      return res
-        .status(404)
-        .send(
-          "No matching record found in SAC table."
-        );
-    }
 
     res
       .status(200)
@@ -384,7 +386,7 @@ const updateLibraryStatus = async (
   } catch (error) {
     console.error(
       "Error updating Library exit status: " +
-        error.stack
+        error
     );
     res
       .status(500)

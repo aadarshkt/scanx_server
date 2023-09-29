@@ -1,6 +1,6 @@
 import mysql from "mysql2/promise";
 
-async function query(sql, params) {
+async function query(sql, params, res) {
   // const connection =
   //   await mysql.createConnection({
   //     host: process.env
@@ -34,6 +34,12 @@ async function query(sql, params) {
         sql +
         error
     );
+    res
+      .status(500)
+      .json({
+        message:
+          "Internal Server Error",
+      });
   }
 }
 

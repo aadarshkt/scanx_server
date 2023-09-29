@@ -22,7 +22,8 @@ const getLastLocation = async (
   const last_location_response =
     await query(
       searchLastLocationQuery,
-      [userId]
+      [userId],
+      res
     );
   if (
     last_location_response.length > 0
@@ -59,7 +60,8 @@ async function createStudent(req, res) {
 
   const isPresent = await query(
     checkEmailQuery,
-    [email]
+    [email],
+    res
   );
   if (isPresent[0].email_count > 0) {
     //status code 409 for conflict
@@ -92,7 +94,8 @@ async function createStudent(req, res) {
         formattedLibraryTime,
         formattedSACTime,
         hashedPassword,
-      ]
+      ],
+      res
     );
 
     return res
@@ -130,7 +133,8 @@ const updateProfile = async (
       "SELECT * FROM students WHERE email = ?";
     const [row] = await query(
       searchProfileQuery,
-      [email]
+      [email],
+      res
     );
     if (row.length == 0) {
       console.error(
@@ -139,13 +143,17 @@ const updateProfile = async (
     } else {
       const updateProfileQuery =
         "UPDATE students SET (name, roll_number, last_location, total_library_time, total_sac_time) VALUES (?, ?, ?, ?, ?)";
-      await query(updateProfileQuery, [
-        name,
-        roll_number,
-        last_location,
-        total_library_time,
-        total_sac_time,
-      ]);
+      await query(
+        updateProfileQuery,
+        [
+          name,
+          roll_number,
+          last_location,
+          total_library_time,
+          total_sac_time,
+        ],
+        res
+      );
     }
   } catch (error) {
     console.error(
@@ -181,7 +189,8 @@ const updateStudent = async (
 
     const [rows] = await query(
       prevQuery,
-      studentCredentials
+      studentCredentials,
+      res
     );
 
     if (rows.length === 0) {
@@ -280,7 +289,8 @@ const updateStudent = async (
 
     const [result] = await query(
       query,
-      values
+      values,
+      res
     );
 
     if (result.affectedRows === 0) {

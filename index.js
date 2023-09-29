@@ -62,7 +62,8 @@ app.post("/login", async (req, res) => {
       "SELECT * FROM students WHERE email = ?";
     const rows = await query(
       searchEmail,
-      [email]
+      [email],
+      res
     );
     if (rows.length == 0) {
       console.log(
@@ -125,7 +126,8 @@ app.get("/", async (req, res) => {
       }
 
       res.json(results);
-    }
+    },
+    res
   );
 });
 

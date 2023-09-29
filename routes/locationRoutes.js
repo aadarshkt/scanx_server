@@ -14,6 +14,7 @@ router.post(
     switch (location) {
       case "Library":
         createLibraryRecord(req, res);
+        break;
       case "SAC":
         createSACRecord(req, res);
         break;
@@ -28,7 +29,7 @@ router.post(
 router.get("/", (req, res) => {
   const location = req.query.location;
   switch (location) {
-    case "LIBRARY":
+    case "Library":
       fetchAllLibraryrecords(req, res);
       break;
     case "SAC":
