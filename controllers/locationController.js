@@ -61,7 +61,14 @@ const createSACRecord = async (
         ? resStatus[0].status
         : -1;
 
-    if (prevStatus == -1) {
+    console.log(
+      "prevStatus" + prevStatus
+    );
+
+    if (
+      prevStatus == -1 ||
+      prevStatus == 0
+    ) {
       const currentTime = new Date(
         DateTime.now()
       );
@@ -150,34 +157,56 @@ const updateSACStatus = async (
         : currentTime;
     //Calculate total time spent in a location
     const timeSpent =
-      calculateTimeDifference(
-        entryTime,
-        currentTime
+      currentTime - entryTime;
+
+    //get already total time spent in SAC.
+    const get_prev_time_query =
+      "SELECT total_sac_time FROM students WHERE email = ?";
+    const prev_total_time_spent =
+      await query(
+        get_prev_time_query,
+        [email],
+        res
       );
+
+    const total_time_spent =
+      prev_total_time_spent[0]
+        .total_sac_time + timeSpent;
+
     console.log(
       "time spent" + timeSpent
     );
+    console.log(
+      "prev total time" +
+        prev_total_time_spent[0]
+          .total_sac_time
+    );
+    console.log(total_time_spent);
+
     //update student table with time spent at location
     const updateTimeSpentQuery =
       "UPDATE students SET total_sac_time = ? WHERE email = ?";
     await query(
       updateTimeSpentQuery,
-      [timeSpent, email],
+      [total_time_spent, email],
       res
     );
 
     //exit and update exit_at, current_in and status of out.
     const exitSACQuery =
-      "UPDATE SAC SET status = ?, current_in = ?, exit_at = ? WHERE email = ?";
+      "UPDATE SAC SET status = ?, current_in = ?, exit_at = ? WHERE email = ? AND status = ?";
+
+    console.log(email);
 
     const values = [
       0,
       current_in,
       currentTime,
       email,
+      1,
     ];
 
-    await query(
+    const exitResult = await query(
       exitSACQuery,
       values,
       res
@@ -191,21 +220,19 @@ const updateSACStatus = async (
       res
     );
 
-    res
-      .status(200)
-      .send(
-        "SAC exit status updated successfully!"
-      );
+    return res.status(200).json({
+      message:
+        "SAC exit status updated successfully!",
+    });
   } catch (error) {
     console.error(
       "Error updating SAC exit status: " +
         error.stack
     );
-    res
-      .status(500)
-      .send(
-        "Error updating SAC exit status."
-      );
+    return res.status(500).send({
+      message:
+        "Error updating SAC exit status.",
+    });
   }
 };
 
@@ -254,7 +281,10 @@ const createLibraryRecord = async (
         ? resStatus[0].status
         : -1;
 
-    if (prevStatus == -1) {
+    if (
+      prevStatus == -1 ||
+      prevStatus === 0
+    ) {
       const currentTime = new Date(
         DateTime.now()
       );
@@ -347,29 +377,41 @@ const updateLibraryStatus = async (
         : currentTime;
     //Calculate total time spent in a location
     const timeSpent =
-      calculateTimeDifference(
-        entryTime,
-        currentTime
+      currentTime - entryTime;
+
+    //get already total time spent in Library.
+    const get_prev_time_query =
+      "SELECT total_library_time FROM students WHERE email = ?";
+    const prev_total_time_spent =
+      await query(
+        get_prev_time_query,
+        [email],
+        res
       );
+
+    const total_time_spent =
+      prev_total_time_spent[0]
+        .total_library_time + timeSpent;
 
     //update student table with time spent at location
     const updateTimeSpentQuery =
       "UPDATE students SET total_library_time = ?, status = ? WHERE email = ?";
     await query(
       updateTimeSpentQuery,
-      [timeSpent, 0, email],
+      [total_time_spent, 0, email],
       res
     );
 
     //exit library with changing status and current_in
     const exitLibraryQuery =
-      "UPDATE Library SET status = ?, current_in = ?, exit_at = ? WHERE email = ?";
+      "UPDATE Library SET status = ?, current_in = ?, exit_at = ? WHERE email = ? AND status = ?";
 
     const values = [
       0,
       current_in,
       currentTime,
       email,
+      1,
     ];
 
     await query(
@@ -377,7 +419,6 @@ const updateLibraryStatus = async (
       values,
       res
     );
-
     res
       .status(200)
       .send(

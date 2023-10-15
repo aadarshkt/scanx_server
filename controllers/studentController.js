@@ -75,14 +75,6 @@ async function createStudent(req, res) {
   const hashedPassword =
     await bcrypt.hash(password, 10);
 
-  // Convert datetime values to MySQL datetime format using Luxon
-  const formattedLibraryTime = new Date(
-    DateTime.now()
-  );
-  const formattedSACTime = new Date(
-    DateTime.now()
-  );
-
   try {
     // Execute the insert query to create a new student
     await query(
@@ -94,8 +86,8 @@ async function createStudent(req, res) {
         mobile_number,
         last_location,
         -1,
-        formattedLibraryTime,
-        formattedSACTime,
+        0,
+        0,
         hashedPassword,
       ],
       res
