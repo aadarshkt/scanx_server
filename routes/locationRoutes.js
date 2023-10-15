@@ -36,7 +36,10 @@ router.get("/", (req, res) => {
       fetchAllSACrecords(req, res);
       break;
     default:
-      res.send("Invalid Location");
+      //status code 400 -> bad request.
+      res
+        .status(400)
+        .send("Invalid Location");
   }
 });
 
