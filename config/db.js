@@ -13,33 +13,17 @@ async function query(sql, params, res) {
   //     database:
   //       process.env.MYSQL_ADDON_DB,
   //   });
-  const connection =
-    await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      database: "scanx_database",
-    });
+  const connection = await mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    database: "scanx_database",
+  });
 
   try {
-    const [results] =
-      await connection.execute(
-        sql,
-        params
-      );
-
+    const [results] = await connection.execute(sql, params);
     return results;
   } catch (error) {
-    console.error(
-      "Error executing mySql query" +
-        sql +
-        error
-    );
-    res
-      .status(500)
-      .json({
-        message:
-          "Internal Server Error",
-      });
+    throw Error("Error executing mySql query" + sql + error);
   }
 }
 
