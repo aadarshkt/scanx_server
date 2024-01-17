@@ -54,23 +54,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Define a route handler for the root path
-app.get("/", async (req, res) => {
-  // Execute a query
-  await query(
-    "SELECT * FROM students",
-    (error, results) => {
-      if (error) {
-        console.log("Error executing MySQL query: " + error.stack);
-        return res.status(500).send("Error executing MySQL query.");
-      }
-
-      res.json(results);
-    },
-    res
-  );
-});
-
 app.use("/students", studentsRouter);
 app.use("/location", locationRouter);
 
