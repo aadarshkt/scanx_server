@@ -4,7 +4,7 @@ import { calculateTimeDifference } from "../utils/helperFunctions.js";
 
 //fetch all sac records
 const fetchAllSACrecords = async (req, res) => {
-  const results = await query("SELECT * FROM SAC");
+  const results = await query('SELECT * FROM "SAC"');
   res.json(results);
 };
 
@@ -35,7 +35,7 @@ const createSACRecord = async (req, res) => {
     //check status of that student at that location
     //if status 1 means in, exit that student call updateSACStatus
     //if status 0 or not available enter that student call insert query.
-    const checkStatusQuery = "SELECT * FROM SAC WHERE email = ? AND status = ?";
+    const checkStatusQuery = 'SELECT * FROM "SAC" WHERE email = $1 AND status = $2';
     const resStatus = await query(checkStatusQuery, [email, 1], res);
     const prevStatus = resStatus.length > 0 ? resStatus[0].status : -1;
 
@@ -47,11 +47,11 @@ const createSACRecord = async (req, res) => {
       const currentTime = new Date(DateTime.now());
       // Execute the insert query
       await query(
-        "INSERT INTO SAC (name, roll_no, email, mobile_number, room_no, hostel, entry_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        'INSERT INTO "SAC" (name, roll_no, email, mobile_number, room_no, hostel, entry_at, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
         [name, roll_no, email, mobile_number, room_no, hostel, currentTime, 1],
         res
       );
-      const updateLastLocation = "UPDATE students SET last_location = ?, status = ? WHERE email = ?";
+      const updateLastLocation = "UPDATE students SET last_location = $1, status = $2 WHERE email = $3";
       await query(updateLastLocation, ["SAC", 1, email], res);
       return res.status(200).send("SAC Record created successfully!");
     } else {
@@ -69,7 +69,7 @@ const updateSACStatus = async (req, res) => {
     const { email } = req.body;
 
     //get previous current_in
-    const prevRow = await query("SELECT current_in FROM SAC LIMIT 1");
+    const prevRow = await query('SELECT current_in FROM "SAC" LIMIT 1');
 
     // Get the current_in value from the previous row
     const previousCurrentIn = prevRow.length > 0 ? prevRow[0].current_in : null;
@@ -81,14 +81,14 @@ const updateSACStatus = async (req, res) => {
     const currentTime = new Date(DateTime.now());
 
     //fetch entry_at value of a particular student such that status is 1.
-    const entryQuery = "SELECT * FROM SAC WHERE email = ? AND status = ?";
+    const entryQuery = 'SELECT * FROM "SAC" WHERE email = $1 AND status = $2';
     const entryResult = await query(entryQuery, [email, 1], res);
     const entryTime = entryResult.length > 0 ? entryResult[0].entry_at : currentTime;
     //Calculate total time spent in a location
     const timeSpent = currentTime - entryTime;
 
     //get already total time spent in SAC.
-    const get_prev_time_query = "SELECT total_sac_time FROM students WHERE email = ?";
+    const get_prev_time_query = "SELECT total_sac_time FROM students WHERE email = $1";
     const prev_total_time_spent = await query(get_prev_time_query, [email], res);
 
     const total_time_spent = prev_total_time_spent[0].total_sac_time + timeSpent;
@@ -98,11 +98,11 @@ const updateSACStatus = async (req, res) => {
     console.log(total_time_spent);
 
     //update student table with time spent at location
-    const updateTimeSpentQuery = "UPDATE students SET total_sac_time = ? WHERE email = ?";
+    const updateTimeSpentQuery = "UPDATE students SET total_sac_time = $1 WHERE email = $2";
     await query(updateTimeSpentQuery, [total_time_spent, email], res);
 
     //exit and update exit_at, current_in and status of out.
-    const exitSACQuery = "UPDATE SAC SET status = ?, current_in = ?, exit_at = ? WHERE email = ? AND status = ?";
+    const exitSACQuery = 'UPDATE "SAC" SET status = $1, current_in = $2, exit_at = $3 WHERE email = $4 AND status = $5';
 
     console.log(email);
 
@@ -110,7 +110,7 @@ const updateSACStatus = async (req, res) => {
 
     const exitResult = await query(exitSACQuery, values, res);
     //update last location
-    const updateLastLocation = "UPDATE students SET last_location = ?, status = ? WHERE email = ?";
+    const updateLastLocation = "UPDATE students SET last_location = $1, status = $2 WHERE email = $3";
     await query(updateLastLocation, ["SAC", 0, email], res);
 
     return res.status(200).json({
@@ -127,7 +127,7 @@ const updateSACStatus = async (req, res) => {
 //fetch all Library records
 const fetchAllLibraryrecords = async (req, res) => {
   try {
-    const results = await query("SELECT * FROM Library");
+    const results = await query('SELECT * FROM "Library"');
     res.json(results);
   } catch (err) {
     console.error("There was an error in fetching records" + err);
@@ -139,7 +139,7 @@ const createLibraryRecord = async (req, res) => {
 
   //Todo handle description and status
   try {
-    const checkStatusQuery = "SELECT status FROM Library WHERE email = ? AND status = ?";
+    const checkStatusQuery = 'SELECT status FROM "Library" WHERE email = $1 AND status = $2';
     const resStatus = await query(checkStatusQuery, [email, 1], res);
     const prevStatus = resStatus.length > 0 ? resStatus[0].status : -1;
 
@@ -147,11 +147,11 @@ const createLibraryRecord = async (req, res) => {
       const currentTime = new Date(DateTime.now());
       // Execute the insert query
       await query(
-        "INSERT INTO Library (name, roll_no, email, mobile_number, room_no, hostel, entry_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        'INSERT INTO "Library" (name, roll_no, email, mobile_number, room_no, hostel, entry_at, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
         [name, roll_no, email, mobile_number, room_no, hostel, currentTime, 1],
         res
       );
-      const updateLastLocation = "UPDATE students SET last_location = ?, status = ? WHERE email = ?";
+      const updateLastLocation = "UPDATE students SET last_location = $1, status = $2 WHERE email = $3";
       await query(updateLastLocation, ["Library", 1, email], res);
       return res.status(200).send("Library Record created successfully!");
     } else {
@@ -170,7 +170,7 @@ const updateLibraryStatus = async (req, res) => {
     const { email } = req.body;
 
     //get previous current_in
-    const [prevRow] = await query("SELECT current_in FROM Library LIMIT 1");
+    const [prevRow] = await query('SELECT current_in FROM "Library" LIMIT 1');
 
     // Get the current_in value from the previous row
     const previousCurrentIn = prevRow && prevRow[0] ? prevRow[0].current_in : null;
@@ -182,25 +182,27 @@ const updateLibraryStatus = async (req, res) => {
     const currentTime = new Date(DateTime.now());
 
     //fetch entry_at value of a particular student such that status is 1.
-    const entryQuery = "SELECT * FROM Library WHERE email = ? AND status = ?";
+    const entryQuery = 'SELECT * FROM "Library" WHERE email = $1 AND status = $2';
     const entryResult = await query(entryQuery, [email, 1], res);
     const entryTime = entryResult.length > 0 ? entryResult[0].entry_at : currentTime;
     //Calculate total time spent in a location
     const timeSpent = currentTime - entryTime;
 
     //get already total time spent in Library.
-    const get_prev_time_query = "SELECT total_library_time FROM students WHERE email = ?";
+    const get_prev_time_query = "SELECT total_library_time FROM students WHERE email = $1";
     const prev_total_time_spent = await query(get_prev_time_query, [email], res);
+
+    console.log(prev_total_time_spent);
 
     const total_time_spent = prev_total_time_spent[0].total_library_time + timeSpent;
 
     //update student table with time spent at location
-    const updateTimeSpentQuery = "UPDATE students SET total_library_time = ?, status = ? WHERE email = ?";
+    const updateTimeSpentQuery = "UPDATE students SET total_library_time = $1, status = $2 WHERE email = $3";
     await query(updateTimeSpentQuery, [total_time_spent, 0, email], res);
 
     //exit library with changing status and current_in
     const exitLibraryQuery =
-      "UPDATE Library SET status = ?, current_in = ?, exit_at = ? WHERE email = ? AND status = ?";
+      'UPDATE "Library" SET status = $1, current_in = $2, exit_at = $3 WHERE email = $4 AND status = $5';
 
     const values = [0, current_in, currentTime, email, 1];
 
@@ -215,7 +217,7 @@ const updateLibraryStatus = async (req, res) => {
 // Controller function to get a single value from the current_in column of SAC
 const getCurrentInValue = async (req, res) => {
   try {
-    const [row] = await query("SELECT current_in FROM SAC LIMIT 1");
+    const [row] = await query('SELECT current_in FROM "SAC" LIMIT 1');
 
     if (!row) {
       return res.status(404).send("No records found.");

@@ -9,7 +9,8 @@ const getLastLocation = async (req, res) => {
   //verification with jwt token of user.
   const userId = verifyToken(req, res);
 
-  const searchLastLocationQuery = "SELECT last_location, total_sac_time, total_library_time FROM students WHERE id = ?";
+  const searchLastLocationQuery =
+    "SELECT last_location, total_sac_time, total_library_time FROM students WHERE id = $1";
   const last_location_response = await query(searchLastLocationQuery, [userId], res);
   if (last_location_response.length > 0) {
     return res.status(200).json({
@@ -22,14 +23,14 @@ const getLastLocation = async (req, res) => {
   return res.status(401).json({ message: "Unauthorised" });
 };
 
-//create a new student
+//register new student
 async function createStudent(req, res) {
   const { name, roll_number, email, mobile_number, last_location, password, room_no, hostel } = req.body;
 
   console.log(req.body);
 
   //check for already existing email
-  const checkEmailQuery = "SELECT COUNT(*) AS email_count FROM students WHERE email = ?";
+  const checkEmailQuery = "SELECT COUNT(*) AS email_count FROM students WHERE email = $1";
 
   const isPresent = await query(checkEmailQuery, [email], res);
   if (isPresent[0].email_count > 0) {
@@ -41,23 +42,23 @@ async function createStudent(req, res) {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // Execute the insert query to create a new student
-  await query(
-    "INSERT INTO students (name, roll_number, email, last_location, status, total_library_time, total_sac_time, mobile_number, room_no, hostel, hashedpassword) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-    [name, roll_number, email, last_location, -1, 0, 0, mobile_number, room_no, hostel, hashedPassword],
-    res
+  const result = await query(
+    "INSERT INTO students (name, roll_number, email, last_location, status, total_library_time, total_sac_time, mobile_number, room_no, hostel, hashedpassword) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+    [name, roll_number, email, last_location, -1, 0, 0, mobile_number, room_no, hostel, hashedPassword]
   );
+  return res.json({ message: "Creation of student successful" });
 }
 
 const updateProfile = async (req, res) => {
   try {
     const { name, roll_number, email, last_location, total_library_time, total_sac_time } = req.body;
-    const searchProfileQuery = "SELECT * FROM students WHERE email = ?";
+    const searchProfileQuery = "SELECT * FROM students WHERE email = $1";
     const [row] = await query(searchProfileQuery, [email], res);
     if (row.length == 0) {
       console.error("No matching student found for update");
     } else {
       const updateProfileQuery =
-        "UPDATE students SET (name, roll_number, last_location, total_library_time, total_sac_time) VALUES (?, ?, ?, ?, ?)";
+        "UPDATE students SET (name, roll_number, last_location, total_library_time, total_sac_time) VALUES ($1, $2, $3, $4, $5)";
       await query(updateProfileQuery, [name, roll_number, last_location, total_library_time, total_sac_time], res);
     }
   } catch (error) {
@@ -71,7 +72,7 @@ const updateStudent = async (req, res) => {
   try {
     const { name, roll_no, mobile_number, room_no, hostel, description, current_location } = req.body;
 
-    const prevQuery = "SELECT last_location, status FROM students WHERE name = ? AND roll_number = ?";
+    const prevQuery = "SELECT last_location, status FROM students WHERE name = $1 AND roll_number = $2";
 
     const studentCredentials = [name, roll_number];
 
@@ -138,7 +139,7 @@ const updateStudent = async (req, res) => {
     }
 
     //Update students table.
-    const query = "UPDATE students SET last_location = ?, status = ? WHERE name = ? AND roll_number = ?";
+    const query = "UPDATE students SET last_location = $1, status = $2 WHERE name = $3 AND roll_number = $4";
 
     const values = [current_location, status, name, roll_number];
 
