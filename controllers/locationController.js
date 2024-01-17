@@ -91,11 +91,11 @@ const updateSACStatus = async (req, res) => {
     const get_prev_time_query = "SELECT total_sac_time FROM students WHERE email = $1";
     const prev_total_time_spent = await query(get_prev_time_query, [email], res);
 
-    const total_time_spent = prev_total_time_spent[0].total_sac_time + timeSpent;
+    const total_time_spent = Number(prev_total_time_spent[0].total_sac_time) + Number(timeSpent);
 
     console.log("time spent" + timeSpent);
-    console.log("prev total time" + prev_total_time_spent[0].total_sac_time);
-    console.log(total_time_spent);
+    console.log("prev total time " + prev_total_time_spent[0].total_sac_time);
+    console.log("total time spent " + total_time_spent);
 
     //update student table with time spent at location
     const updateTimeSpentQuery = "UPDATE students SET total_sac_time = $1 WHERE email = $2";
@@ -192,9 +192,9 @@ const updateLibraryStatus = async (req, res) => {
     const get_prev_time_query = "SELECT total_library_time FROM students WHERE email = $1";
     const prev_total_time_spent = await query(get_prev_time_query, [email], res);
 
-    console.log(prev_total_time_spent);
+    console.log(" prev total time spent " + prev_total_time_spent);
 
-    const total_time_spent = prev_total_time_spent[0].total_library_time + timeSpent;
+    const total_time_spent = Number(prev_total_time_spent[0].total_library_time) + Number(timeSpent);
 
     //update student table with time spent at location
     const updateTimeSpentQuery = "UPDATE students SET total_library_time = $1, status = $2 WHERE email = $3";

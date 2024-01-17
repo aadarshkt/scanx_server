@@ -13,7 +13,7 @@ const generateToken = (user) => {
 //userId from the token, if invalid then respond with unauthrised access.
 const verifyToken = (req, res) => {
   // Extract the authorization token from the request headers
-  const authorizationHeader = req.headers["Authorization"];
+  const authorizationHeader = req.headers["authorization"];
 
   // Check if the authorization header is present
   if (!authorizationHeader) {
@@ -28,7 +28,7 @@ const verifyToken = (req, res) => {
   const tokenParts = authorizationHeader.split(" ");
 
   // Check if the header has the correct format
-  if (tokenParts.length !== 2 || tokenParts[0].toLowerCase() !== "Bearer") {
+  if (tokenParts.length !== 2 || tokenParts[0].toLowerCase() !== "bearer") {
     res.status(401).json({
       message: "Invalid authorization header format",
     });

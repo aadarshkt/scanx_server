@@ -42,7 +42,7 @@ async function createStudent(req, res) {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // Execute the insert query to create a new student
-  const result = await query(
+  await query(
     "INSERT INTO students (name, roll_number, email, last_location, status, total_library_time, total_sac_time, mobile_number, room_no, hostel, hashedpassword) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
     [name, roll_number, email, last_location, -1, 0, 0, mobile_number, room_no, hostel, hashedPassword]
   );
