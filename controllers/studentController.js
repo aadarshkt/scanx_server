@@ -156,4 +156,27 @@ const updateStudent = async (req, res) => {
   }
 };
 
-export { createStudent, getLastLocation, updateStudent, updateProfile };
+const delete_student = async (req, res) => {
+  const { email, password } = req.body;
+  const searchEmail = "SELECT * FROM students WHERE email = $1";
+  const rows = await query(searchEmail, [email]);
+  if (rows.length == 0) {
+    console.log("Error finding the email");
+    return res.status(401).json({
+      error: "Unauthorised access, Invaild email",
+    });
+  }
+  const isPasswordValid = await bcrypt.compare(password, rows[0].hashedpassword);
+  if (!isPasswordValid) {
+    console.error("The password is not valid");
+    return res.status(401).json({
+      error: "Invalid authentication credentials",
+    });
+  }
+
+  const delete_query = "DELETE FROM students WHERE email = $1";
+  await query(delete_query, [email]);
+  return res.status(200).json({ message: "successfully deleted message" });
+};
+
+export { createStudent, getLastLocation, updateStudent, updateProfile, delete_student };
